@@ -28,25 +28,27 @@ import cv2 as cv
 
 
 
-root_dir = "/Users/chenziyang/Documents/Ziyang/Crawler/中石化.nosync/验证码/CAPTCHA_Validation/Data"
-for i in listdir(root_dir):
-    if not isdir(join(root_dir, i)):
-        continue
-    for j in listdir(join(root_dir, i)):
-        path = join(root_dir, i, j)
-        if isfile(path) and ".png" in path:
-            temp = cv.imread(path)
-            if temp is not None:
-                # remove(path)
-                # temp = cv.resize(temp, (38, 60))
-                # temp.reshape(3,38,60)
-                print(temp.shape)
-                # cv.imwrite(path,temp)
-        elif isfile(path) and ".png" not in path:
-            continue
+# root_dir = "/Users/chenziyang/Documents/Ziyang/Crawler/中石化.nosync/验证码/CAPTCHA_Validation/Data"
+# for i in listdir(root_dir):
+#     if not isdir(join(root_dir, i)):
+#         continue
+#     for j in listdir(join(root_dir, i)):
+#         path = join(root_dir, i, j)
+#         if isfile(path) and ".png" in path:
+#             temp = cv.imread(path)
+#             if temp is not None:
+#                 # remove(path)
+#                 # temp = cv.resize(temp, (38, 60))
+#                 # temp.reshape(3,38,60)
+#                 print(temp.shape)
+#                 # cv.imwrite(path,temp)
+#         elif isfile(path) and ".png" not in path:
+#             continue
 
 
-# c = gb688Dataset.gb688Dataset(Path("Data").absolute())
+c = gb688Dataset.gb688Dataset(Path("Data").absolute()).getMapping()
+b = {i[1 ]for i in c.values()}
+print(b)
 # d = DataLoader(c, 5, shuffle=True)
 # for batch_idx, (data, labels) in enumerate(d):
 #         print(data.shape)

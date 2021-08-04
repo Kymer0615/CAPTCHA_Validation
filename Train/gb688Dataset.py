@@ -15,6 +15,8 @@ class gb688Dataset(Dataset):
         self.mapping = self.imgMapping()
         self.transform = transform
 
+    def getMapping(self):
+        return self.mapping
     def imgMapping(self):
         dic = {}
         index = 0

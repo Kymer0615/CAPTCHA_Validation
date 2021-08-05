@@ -22,7 +22,7 @@ class LeNet5(nn.Module):
         # Test variable to get the ouput size of the hidden layers
 
         self.feature_extractor = nn.Sequential(
-            nn.Conv2d(in_channels=self.channel_num, out_channels=6, kernel_size=3, stride=1,padding=(1, 1),),
+            nn.Conv2d(in_channels=self.channel_num, out_channels=6, kernel_size=5, stride=1,padding=(1, 1),),
             nn.Tanh(),
             nn.AvgPool2d(kernel_size=2),
             nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5, stride=1),

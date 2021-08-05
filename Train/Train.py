@@ -26,9 +26,9 @@ augmentation_transforms = transforms.Compose([
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 N_CLASSES = 31
 LEARNING_RATE = 0.002
-BATCH_SIZE = 25
+BATCH_SIZE = 55
 N_EPOCHS = 30
-TEST_PERCENTAGE = 0.5
+TEST_PERCENTAGE = 0.25
 APPLY_AUGMENTATION = True
 
 # Model saving path
@@ -181,4 +181,4 @@ def training_loop(model, criterion, optimizer, train_loader, valid_loader, epoch
 
 
 model, optimizer, _ = training_loop(model, criterion, optimizer, train_loader, test_loader, N_EPOCHS, DEVICE)
-# torch.save(model.state_dict(), PATH+"/gb688"+".pth")
+torch.save(model.state_dict(), PATH+"/gb688"+".pth")

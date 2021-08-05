@@ -58,9 +58,9 @@ class Preprocess:
         if inputPath:
             files = [join(inputPath, f) for f in listdir(inputPath) if isfile(join(inputPath, f)) and ".png" in f]
         for img in files:
-            if isinstance(img,str): img = cv.imread(img, 0)
-            print(type(img))
-            if isinstance(img,np.ndarray):
+            if isinstance(img, str):
+                img = cv.imread(img, 0)
+            elif isinstance(img, np.ndarray):
                 img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
             img = self.binary(img)
             # self.find_contours(img)

@@ -13,16 +13,16 @@ import matplotlib.pyplot as plt
 
 class LeNet5(nn.Module):
 
-    def __init__(self, n_classes, param):
+    def __init__(self, n_classes):
         super(LeNet5, self).__init__()
-        self.width = param[0]
-        self.height = param[1]
-        self.channel_num = param[2]
+        self.width = 32
+        self.height = 32
+        self.channel_num = 1
         self._to_linear = None
         # Test variable to get the ouput size of the hidden layers
 
         self.feature_extractor = nn.Sequential(
-            nn.Conv2d(in_channels=self.channel_num, out_channels=6, kernel_size=5, stride=1),
+            nn.Conv2d(in_channels=self.channel_num, out_channels=6, kernel_size=3, stride=1,padding=(1, 1),),
             nn.Tanh(),
             nn.AvgPool2d(kernel_size=2),
             nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5, stride=1),
@@ -43,9 +43,6 @@ class LeNet5(nn.Module):
 
     def forward(self, x):
         x = self.feature_extractor(x)
-        # print(torch.flatten(x, 1).shape)
-        # print(self._to_linear)
-        # x = x.view(-1, 225)
         x = torch.flatten(x, 1)
         logits = self.classifier(x)
         probs = F.softmax(logits, dim=1)

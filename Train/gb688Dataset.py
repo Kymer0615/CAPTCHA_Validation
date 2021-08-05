@@ -15,8 +15,12 @@ class gb688Dataset(Dataset):
         self.mapping = self.imgMapping()
         self.transform = transform
 
+    def getLabelNum(self):
+        return len({i[1] for i in self.mapping.values()})
+
     def getMapping(self):
-        return self.mapping
+        return {v: k for k, v in self.labelMapping.items()}
+
     def imgMapping(self):
         dic = {}
         index = 0
@@ -39,8 +43,8 @@ class gb688Dataset(Dataset):
         return len(self.mapping)
 
     def __getitem__(self, idx):
-        image = read_image(self.mapping[idx][0])
-        image = np.array(image).reshape(60,38,3)
+        image = cv.imread(self.mapping[idx][0])[:,:,1]
+        image = np.array(image).reshape(32, 32, 1)
         label = self.mapping[idx][1]
         if self.transform:
             image = self.transform(image)

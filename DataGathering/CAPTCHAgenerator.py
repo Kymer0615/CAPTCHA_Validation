@@ -17,7 +17,7 @@ class CAPTCHAgenerator:
         self.get_CAPTCHA()
 
     def get_CAPTCHA(self):
-        print(self.CWD)
+        # print(self.CWD)
         files = [join(self.get_path(), f) for f in listdir(self.get_path()) if
                  isfile(join(self.get_path(), f)) and ".png" in f]
         path = self.get_path()

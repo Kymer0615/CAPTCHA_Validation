@@ -1,24 +1,26 @@
+import numpy as np
 from matplotlib import pyplot as plt
 import cv2 as cv
 from os import listdir, getcwd
 from os.path import isfile, join
 import uuid
+from torch import tensor
 
 
 class Preprocess:
-    def __init__(self, inputPath, root_dir=None):
-        self.inputPath = inputPath
-        self.files = [join(inputPath, f) for f in listdir(inputPath) if isfile(join(inputPath, f)) and ".png" in f]
+    def __init__(self):
         self.images = []
         self.CWD = getcwd()
-        self.root_dir = root_dir if root_dir else "./DataGathering/PreprocessedImage/"
 
     def binary(self, img):
+        # print(img.shape)
         img = cv.cvtColor(img, cv.COLOR_BAYER_RG2GRAY)
         img = cv.medianBlur(img, 3)
         _, thresh = cv.threshold(img, 127, 255, cv.THRESH_OTSU)
-        # img = cv.Canny(img, 100, 200)
         return thresh
+
+    def resize(self, img):
+        return cv.resize(img, (32, 32))
 
     def slice_image(self, img, num, h, w):
         images = []
@@ -52,21 +54,27 @@ class Preprocess:
             # cv2.drawContours(img, [box], 0, (255, 0, 255), 3)
         print("轮廓数量", len(contours))
 
-    def preprocess(self):
-        print(self.files)
-        for i in self.files:
-            img = cv.imread(i, 0)
+    def preprocess(self, inputPath=None, files=None):
+        if inputPath:
+            files = [join(inputPath, f) for f in listdir(inputPath) if isfile(join(inputPath, f)) and ".png" in f]
+        for img in files:
+            if isinstance(img,str): img = cv.imread(img, 0)
+            print(type(img))
+            if isinstance(img,np.ndarray):
+                img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
             img = self.binary(img)
             # self.find_contours(img)
             # TODO 这里切割次数 和 具体数据可能需要更改
             imgs = self.slice_image(img, 4, 60, 150)
-            for i in imgs: self.images.append(i)
+            if files:
+                for i in imgs:
+                    self.images.append(self.resize(i))
+            else:
+                for i in imgs: self.images.append(self.resize(i))
         return self.images
 
-    def save_imgs(self):
+    def save_imgs(self, outputPath):
+        outputPath = outputPath if outputPath else getcwd() + "/DataGathering/PreprocessedImage/"
         for i in self.images:
             uuid_str = uuid.uuid4().hex
-            cv.imwrite((self.get_path() + uuid_str + ".png"),i)
-
-    def get_path(self):
-        return join(self.CWD, self.root_dir)
+            cv.imwrite((outputPath + uuid_str + ".png"), i)

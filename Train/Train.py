@@ -1,6 +1,5 @@
 import numpy as np
-from torch.utils.data import DataLoader, random_split
-
+from torch.utils.data import DataLoader, random_split, ConcatDataset
 from torchvision import datasets, transforms
 from datetime import datetime
 import matplotlib.pyplot as plt
@@ -8,26 +7,46 @@ import torch
 import torch.nn as nn
 from Lenet import LeNet5
 from gb688Dataset import gb688Dataset
-transforms = transforms.Compose([
+from os import getcwd
+from copy import deepcopy
+
+normal_transforms = transforms.Compose([
     transforms.ToTensor(),
+    transforms.Normalize((0.4914), (0.2023))
+])
+
+augmentation_transforms = transforms.Compose([
+    transforms.ToTensor(),
+    # transforms.RandomPerspective(distortion_scale=0.5, p=0.5),
+    transforms.RandomRotation(5),
+    # transforms.GaussianBlur(3, sigma=(0.1, 2.0)),
     transforms.Normalize((0.4914), (0.2023))
 ])
 # check device
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 N_CLASSES = 31
-PARAM = [60, 38, 3]
-LEARNING_RATE = 0.00
-BATCH_SIZE = 32
-N_EPOCHS = 60
+LEARNING_RATE = 0.002
+BATCH_SIZE = 25
+N_EPOCHS = 30
+TEST_PERCENTAGE = 0.5
+APPLY_AUGMENTATION = True
 
-model = LeNet5(N_CLASSES,PARAM).to(DEVICE)
+# Model saving path
+PATH = "/Users/chenziyang/Documents/Ziyang/Crawler/中石化.nosync/验证码/CAPTCHA_Validation/checkpoint"
+model = LeNet5(N_CLASSES).to(DEVICE)
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 criterion = nn.CrossEntropyLoss()
 
-dataset = gb688Dataset("../Data", transform=transforms)
-train_dataset, test_dataset = random_split(dataset, [500, 100], generator=torch.Generator().manual_seed(42))
+normal_dataset = gb688Dataset("../Data", transform=normal_transforms)
+augmentation_dataset = gb688Dataset("../Data", transform=augmentation_transforms)
+train_dataset, test_dataset = random_split(normal_dataset,
+                                           [int(len(normal_dataset) * (1 - TEST_PERCENTAGE)), int(len(normal_dataset) *
+                                            TEST_PERCENTAGE)], generator=torch.Generator().manual_seed(42))
+train_dataset = ConcatDataset([train_dataset, augmentation_dataset])
 train_loader = torch.utils.data.DataLoader(train_dataset, BATCH_SIZE, shuffle=True)
 test_loader = torch.utils.data.DataLoader(test_dataset, BATCH_SIZE)
+
+
 def get_accuracy(model, data_loader, device):
     '''
     Function for computing the accuracy of the predictions over the entire data_loader
@@ -44,11 +63,11 @@ def get_accuracy(model, data_loader, device):
 
             _, y_prob = model(X)
             _, predicted_labels = torch.max(y_prob, 1)
-
             n += y_true.size(0)
             correct_pred += (predicted_labels == y_true).sum()
 
     return correct_pred.float() / n
+
 
 def plot_losses(train_losses, valid_losses):
     '''
@@ -73,6 +92,7 @@ def plot_losses(train_losses, valid_losses):
 
     # change the plot style to default
     plt.style.use('default')
+
 
 def train(train_loader, model, criterion, optimizer, device):
     '''
@@ -100,6 +120,7 @@ def train(train_loader, model, criterion, optimizer, device):
     epoch_loss = running_loss / len(train_loader.dataset)
     return model, optimizer, epoch_loss
 
+
 def validate(valid_loader, model, criterion, device):
     '''
     Function for the validation step of the training loop
@@ -120,6 +141,7 @@ def validate(valid_loader, model, criterion, device):
     epoch_loss = running_loss / len(valid_loader.dataset)
 
     return model, epoch_loss
+
 
 def training_loop(model, criterion, optimizer, train_loader, valid_loader, epochs, device, print_every=1):
     '''
@@ -146,7 +168,6 @@ def training_loop(model, criterion, optimizer, train_loader, valid_loader, epoch
         if epoch % print_every == (print_every - 1):
             train_acc = get_accuracy(model, train_loader, device=device)
             valid_acc = get_accuracy(model, valid_loader, device=device)
-
             print(f'{datetime.now().time().replace(microsecond=0)} --- '
                   f'Epoch: {epoch}\t'
                   f'Train loss: {train_loss:.4f}\t'
@@ -158,5 +179,6 @@ def training_loop(model, criterion, optimizer, train_loader, valid_loader, epoch
 
     return model, optimizer, (train_losses, valid_losses)
 
-model, optimizer, _ = training_loop(model, criterion, optimizer, train_loader, test_loader, N_EPOCHS, DEVICE)
 
+model, optimizer, _ = training_loop(model, criterion, optimizer, train_loader, test_loader, N_EPOCHS, DEVICE)
+# torch.save(model.state_dict(), PATH+"/gb688"+".pth")

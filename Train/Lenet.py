@@ -1,15 +1,6 @@
-import numpy as np
-from datetime import datetime
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
-
-from torchvision import datasets, transforms
-
-import matplotlib.pyplot as plt
-
 
 class LeNet5(nn.Module):
 

@@ -1,14 +1,12 @@
 import numpy as np
 from torch.utils.data import DataLoader, random_split, ConcatDataset
-from torchvision import datasets, transforms
+from torchvision import transforms
 from datetime import datetime
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 from Lenet import LeNet5
-from gb688Dataset import gb688Dataset
-from os import getcwd
-from copy import deepcopy
+from CapitalDataset import CapitalDataset
 
 normal_transforms = transforms.Compose([
     transforms.ToTensor(),
@@ -37,8 +35,8 @@ model = LeNet5(N_CLASSES).to(DEVICE)
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 criterion = nn.CrossEntropyLoss()
 
-normal_dataset = gb688Dataset("../Data", transform=normal_transforms)
-augmentation_dataset = gb688Dataset("../Data", transform=augmentation_transforms)
+normal_dataset = CapitalDataset("../Data/gb688", transform=normal_transforms)
+augmentation_dataset = CapitalDataset("../Data/gb688", transform=augmentation_transforms)
 train_dataset, test_dataset = random_split(normal_dataset,
                                            [int(len(normal_dataset) * (1 - TEST_PERCENTAGE)), int(len(normal_dataset) *
                                             TEST_PERCENTAGE)], generator=torch.Generator().manual_seed(42))

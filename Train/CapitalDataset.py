@@ -8,9 +8,9 @@ import copy
 import cv2 as cv
 
 
-class gb688Dataset(Dataset):
-    def __init__(self, root_dir, transform=None):
-        self.root_dir = root_dir
+class CapitalDataset(Dataset):
+    def __init__(self, rootDir, transform=None):
+        self.rootDir = rootDir
         self.labelMapping = {}
         self.mapping = self.imgMapping()
         self.transform = transform
@@ -24,11 +24,11 @@ class gb688Dataset(Dataset):
     def imgMapping(self):
         dic = {}
         index = 0
-        for i in listdir(self.root_dir):
-            if not isdir(join(self.root_dir, i)):
+        for i in listdir(self.rootDir):
+            if not isdir(join(self.rootDir, i)):
                 continue
-            for j in listdir(join(self.root_dir, i)):
-                path = join(self.root_dir, i, j)
+            for j in listdir(join(self.rootDir, i)):
+                path = join(self.rootDir, i, j)
                 if isfile(path) and ".png" in path:
                     label = str(Path(path).parent.absolute()).split('/')[-1]
                     if label not in self.labelMapping.keys():

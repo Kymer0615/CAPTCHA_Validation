@@ -1,17 +1,17 @@
+import logging
 import numpy as np
-from matplotlib import pyplot as plt
 import cv2 as cv
-from os import listdir, getcwd
-from os.path import isfile, join
 import uuid
-from torch import tensor
-
+from os import listdir, getcwd
+from os.path import isfile, join, isdir
+from pathlib import Path
 
 class Preprocess:
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         self.images = []
-        self.CWD = getcwd()
-
+        self.outputPath = getcwd() + "/DataGathering/PreprocessedImage/" + name + "/"
+        Path(self.outputPath).mkdir(parents=True, exist_ok=True)
     def binary(self, img):
         # print(img.shape)
         img = cv.cvtColor(img, cv.COLOR_BAYER_RG2GRAY)
@@ -54,9 +54,14 @@ class Preprocess:
             # cv2.drawContours(img, [box], 0, (255, 0, 255), 3)
         print("轮廓数量", len(contours))
 
-    def preprocess(self, inputPath=None, files=None):
-        if inputPath:
-            files = [join(inputPath, f) for f in listdir(inputPath) if isfile(join(inputPath, f)) and ".png" in f]
+    def preprocess(self, files=None):
+        if not files:
+            inputPath = getcwd() + "/DataGathering/RawImage/" + self.name
+            if isdir(inputPath):
+                files = [join(inputPath, f) for f in listdir(inputPath) if isfile(join(inputPath, f)) and ".png" in f]
+            else:
+                logging.warning('Raw data have not been generated!')
+                return
         for img in files:
             if isinstance(img, str):
                 img = cv.imread(img, 0)
@@ -73,8 +78,7 @@ class Preprocess:
                 for i in imgs: self.images.append(self.resize(i))
         return self.images
 
-    def save_imgs(self, outputPath):
-        outputPath = outputPath if outputPath else getcwd() + "/DataGathering/PreprocessedImage/"
+    def save_imgs(self):
         for i in self.images:
             uuid_str = uuid.uuid4().hex
-            cv.imwrite((outputPath + uuid_str + ".png"), i)
+            cv.imwrite((self.outputPath + uuid_str + ".png"), i)

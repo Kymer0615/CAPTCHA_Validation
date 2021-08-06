@@ -1,13 +1,10 @@
-import sys
-
 import numpy as np
 import torch
 from torchvision.transforms import transforms
-from os import getcwd, listdir
-from os.path import join, isfile, exists, isdir
-from .Lenet import LeNet5
-from .gb688Dataset import gb688Dataset
-from CAPTCHA_Validation.DataGathering.Preprocess import Preprocess
+from os import getcwd
+from CAPTCHA_Validation.Train.Lenet import LeNet5
+from CAPTCHA_Validation.Train.CapitalDataset import CapitalDataset
+from CAPTCHA_Validation.Utils.Preprocess import Preprocess
 import cv2 as cv
 
 
@@ -16,7 +13,7 @@ class Varify:
     def __init__(self, name):
         self.name = name
         self.checkpointDir = getcwd() + "/checkpoint/" + self.name + ".pth"
-        self.dataset = gb688Dataset(root_dir=getcwd() + "/" + "Data")
+        self.dataset = CapitalDataset(rootDir=getcwd() + "/Data/"+name)
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model = LeNet5(self.dataset.getLabelNum())
         self.model.load_state_dict(torch.load(self.checkpointDir))
@@ -24,7 +21,7 @@ class Varify:
         self.img = None
 
     def getResult(self, input):
-        p = Preprocess()
+        p = Preprocess(self.name)
         if isinstance(input, bytes):
             nparr = np.fromstring(input, np.uint8)
             self.img = cv.imdecode(nparr, cv.IMREAD_COLOR)

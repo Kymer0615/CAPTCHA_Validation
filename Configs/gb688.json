@@ -1,0 +1,65 @@
+{
+  "Preprocessing": {
+    "cvtColor": {
+      "args": [
+        "cv.COLOR_BAYER_RG2GRAY"
+      ]
+    },
+    "medianBlur": {
+      "args": [
+        "3"
+      ]
+    },
+    "threshold": {
+      "args": [
+        "127",
+        "255",
+        "cv.THRESH_OTSU"
+      ]
+    },
+    "slice_image": {
+      "args": [
+        "4",
+        "60",
+        "150"
+      ]
+    },
+    "resize": {
+      "args": []
+    }
+  },
+  "Train": {
+    "LEARNING_RATE": {
+      "args": [
+        "0.002"
+      ]
+    },
+    "BATCH_SIZE": {
+      "args": [
+        "55"
+      ]
+    },
+    "N_EPOCHS": {
+      "args": [
+        "30"
+      ]
+    },
+    "TEST_PERCENTAGE": {
+      "args": [
+        "0.25"
+      ]
+    },
+    "print_every": {
+      "args": [
+        "1"
+      ]
+    },
+    "augmentation_transforms": {
+      "args": [
+        "ToTensor()",
+        "RandomRotation(5)",
+        "Normalize((0.4914), (0.2023)"
+      ]
+    }
+  }
+}

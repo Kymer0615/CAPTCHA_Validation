@@ -1,32 +1,48 @@
 import logging
+logging.getLogger().setLevel(logging.INFO)
 import numpy as np
 import cv2 as cv
 import uuid
 from os import listdir, getcwd
 from os.path import isfile, join, isdir
 from pathlib import Path
+import json
+
+from matplotlib import pyplot as plt
+
 
 class Preprocess:
     def __init__(self, name):
         self.name = name
         self.images = []
         self.outputPath = getcwd() + "/DataGathering/PreprocessedImage/" + name + "/"
+        self.jsonPath = getcwd() + "/Configs/" + name + ".json"
         Path(self.outputPath).mkdir(parents=True, exist_ok=True)
-    def binary(self, img):
-        # print(img.shape)
-        img = cv.cvtColor(img, cv.COLOR_BAYER_RG2GRAY)
-        img = cv.medianBlur(img, 3)
-        _, thresh = cv.threshold(img, 127, 255, cv.THRESH_OTSU)
+
+    @staticmethod
+    def cvtColor(img, arg0):
+        return cv.cvtColor(img, arg0)
+
+    @staticmethod
+    def medianBlur(img, arg0):
+        return cv.medianBlur(img, arg0)
+
+    @staticmethod
+    def threshold(img, arg0, arg1, arg2):
+        _, thresh = cv.threshold(img, arg0, arg1, arg2)
         return thresh
 
-    def resize(self, img):
-        return cv.resize(img, (32, 32))
+    @staticmethod
+    def resize(imgs):
+        return [cv.resize(i, (32, 32)) for i in imgs]
 
-    def slice_image(self, img, num, h, w):
+    @staticmethod
+    def slice_image(img, num, h, w):
         images = []
         w_increment = w / num
         for i in range(1, num + 1):
             images.append(img[0: int(h), int((i - 1) * w_increment):int(i * w_increment)])
+
         return images
 
     def find_contours(self, img):
@@ -67,18 +83,27 @@ class Preprocess:
                 img = cv.imread(img, 0)
             elif isinstance(img, np.ndarray):
                 img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-            img = self.binary(img)
-            # self.find_contours(img)
-            # TODO 这里切割次数 和 具体数据可能需要更改
-            imgs = self.slice_image(img, 4, 60, 150)
-            if files:
-                for i in imgs:
-                    self.images.append(self.resize(i))
-            else:
-                for i in imgs: self.images.append(self.resize(i))
+            for i in self.execFromJson(img):
+                self.images.append(i)
         return self.images
 
     def save_imgs(self):
         for i in self.images:
             uuid_str = uuid.uuid4().hex
             cv.imwrite((self.outputPath + uuid_str + ".png"), i)
+
+    def execFromJson(self, img):
+        with open(self.jsonPath) as f:
+            configs = json.load(f)["Preprocessing"]
+        for i in configs.keys():
+            if len(configs[i]['args']) > 0:
+                methodStr = "Preprocess.%s(img," % i
+                paramStr = "".join([j + "," for j in configs[i]['args']])[:-1]
+                methodStr = methodStr + paramStr + ')'
+                logging.info("Current preprocessing method: %s" % methodStr)
+                img = eval(methodStr)
+            else:
+                methodStr = "Preprocess.%s(img)" % i
+                logging.info("Current preprocessing method: %s" % methodStr)
+                img = eval(methodStr)
+        return img

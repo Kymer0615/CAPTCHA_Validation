@@ -1,4 +1,5 @@
 import logging
+logging.getLogger().setLevel(logging.INFO)
 import requests
 from os import getcwd, listdir
 from os.path import join, isfile

@@ -12,7 +12,7 @@ import cv2 as cv
 class Varify:
     def __init__(self, name):
         self.name = name
-        self.checkpointDir = getcwd() + "/checkpoint/" + self.name + ".pth"
+        self.checkpointDir = getcwd() + "/Checkpoints/" + self.name + ".pth"
         self.dataset = CapitalDataset(rootDir=getcwd() + "/Data/"+name)
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model = LeNet5(self.dataset.getLabelNum())

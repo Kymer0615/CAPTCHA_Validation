@@ -9,8 +9,8 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
-from CAPTCHA_Validation.Train.Lenet import LeNet5
-from CAPTCHA_Validation.Train.CapitalDataset import CapitalDataset
+from main.Train.Lenet import LeNet5
+from main.Train.Dataset import Dataset
 
 
 class Train:
@@ -31,7 +31,7 @@ class Train:
         self.TEST_PERCENTAGE = None
         self.print_every = None
         self.getParamFromJson()
-        self.normal_dataset = CapitalDataset(getcwd() + "/Data/%s" % self.name, transform=self.normal_transforms)
+        self.normal_dataset = Dataset(getcwd() + "/Data/%s" % self.name, transform=self.normal_transforms)
         self.N_CLASSES = self.normal_dataset.getLabelNum()
         self.model = LeNet5(self.N_CLASSES).to(self.DEVICE)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.LEARNING_RATE)
@@ -43,7 +43,7 @@ class Train:
                                                         self.TEST_PERCENTAGE)],
                                                    generator=torch.Generator().manual_seed(42))
         if self.augmentation_transforms:
-            augmentation_dataset = CapitalDataset(getcwd() + "/Data/%s" % self.name,
+            augmentation_dataset = Dataset(getcwd() + "/Data/%s" % self.name,
                                                   transform=self.augmentation_transforms)
             train_dataset = ConcatDataset([train_dataset, augmentation_dataset])
 

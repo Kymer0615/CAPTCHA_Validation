@@ -1,4 +1,5 @@
 import logging
+
 logging.getLogger().setLevel(logging.INFO)
 import numpy as np
 import cv2 as cv
@@ -15,8 +16,8 @@ class Preprocess:
     def __init__(self, name):
         self.name = name
         self.images = []
-        self.outputPath = getcwd() + "/DataGathering/PreprocessedImage/" + name + "/"
-        self.jsonPath = getcwd() + "/Configs/" + name + ".json"
+        self.outputPath = getcwd() + "/resource/DataGathering/PreprocessedImage/" + name + "/"
+        self.jsonPath = getcwd() + "/resource/Configs/" + name + ".json"
         Path(self.outputPath).mkdir(parents=True, exist_ok=True)
 
     @staticmethod
@@ -30,6 +31,8 @@ class Preprocess:
     @staticmethod
     def threshold(img, arg0, arg1, arg2):
         _, thresh = cv.threshold(img, arg0, arg1, arg2)
+        print(thresh.shape)
+        if len(thresh.shape) > 2: thresh = thresh[:, :, 1]
         return thresh
 
     @staticmethod
@@ -45,30 +48,52 @@ class Preprocess:
 
         return images
 
-    def find_contours(self, img):
+    @staticmethod
+    def constant_padding(img):
+        BLUE = [255, 0, 0]
+        return cv.copyMakeBorder(img, 10, 10, 10, 10, cv.BORDER_CONSTANT, value=BLUE)
+
+    @staticmethod
+    def erosion(img, x, y, iterations):
+        kernel = np.ones((x, y), np.uint8)
+        return cv.erode(img, kernel, iterations=iterations)
+
+    @staticmethod
+    def contours_slice(img, digtNum):
+        images = []
         image, contours, hier = cv.findContours(img, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
+        res = []
+        for cont in contours:
+            x, y, w, h = cv.boundingRect(cont)
+            if x != 0 and y != 0 and w * h >= 100:
+                res.append([x, y, w, h])
+        print(len(res))
+        if len(res) < digtNum:
+            res.sort(key=lambda a: a[2])
+            width = {i[2]: i for i in res}
+            width = [i / min(width) for i in width]
+            if digtNum == 4:
+                if len(res) == 3:
+                    temp = res[-1]
+                    res.remove(temp)
+                    res.append((temp[0], temp[1], int(temp[2] / 2), temp[0]))
+                    res.append((temp[0] + int(temp[2] / 2), temp[1], int(temp[2] / 2), temp[0]))
+                if len(res) == 2:
+                    pass
+
+        print(len(res))
+        for (x, y, w, h) in res:
+            image = cv.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+        # elif counter > digtNum:
+        # image = cv.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+
+        plt.imshow(image)
+        plt.show()
         # color = (0, 255, 0)
-        for c in contours:  # 遍历轮廓
-            if cv.contourArea(c) > 50:
-                x, y, w, h = cv.boundingRect(c)
-            # cv.rectangle(img, (x, y), (x + w, y + h), color, 1)
-            print(cv.boundingRect(c))
-            # rect = cv.minAreaRect(c)  # 生成最小外接矩形
-            # box_ = cv.boxPoints(rect)
-            # h = abs(box_[3, 1] - box_[1, 1])
-            # w = abs(box_[3, 0] - box_[1, 0])
-            # print("宽，高", w, h)
-            # # 只保留需要的轮廓
-            # if (h > 3000 or w > 2200):
-            #     continue
-            # if (h < 2500 or w < 1500):
-            #     continue
-            # box = cv.boxPoints(rect)  # 计算最小面积矩形的坐标
-            # box = np.int0(box)  # 将坐标规范化为整数
-            return x, y, w, h
-            # 绘制矩形
-            # cv2.drawContours(img, [box], 0, (255, 0, 255), 3)
-        print("轮廓数量", len(contours))
+
+        # for c in contours:  # 遍历轮廓
+
+        return images
 
     def preprocess(self, files=None):
         if not files:

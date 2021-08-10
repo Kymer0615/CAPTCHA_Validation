@@ -3,12 +3,11 @@ from os import getcwd, listdir
 from os.path import join, isfile, exists, isdir
 from pathlib import Path
 import numpy as np
-from torchvision.io import read_image
 import copy
 import cv2 as cv
 
 
-class CapitalDataset(Dataset):
+class Dataset(Dataset):
     def __init__(self, rootDir, transform=None):
         self.rootDir = rootDir
         self.labelMapping = {}
